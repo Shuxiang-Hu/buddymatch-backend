@@ -1,0 +1,67 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: user-center-backend
+  # DataSource Config
+  datasource:
+    # driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:p6spy:mysql://localhost:3306/bm_db?serverTimezone=UTC
+    username: root
+    password: 123321
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+  # session 失效时间
+  session:
+    timeout: 86400
+    store-type: redis
+  # redis 配置
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  redis:
+    port: 6379
+    host: localhost
+    database: 0
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        domain: localhost
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.shuxiang.
+# knife4j的增强配置，不需要增强可以不配
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+logging:
+  level:
+    com:
+      baomidou:
+        mybatisplus: DEBUG
+      shuxiang:
+        buddymatch:
+          mapper: DEBUg
