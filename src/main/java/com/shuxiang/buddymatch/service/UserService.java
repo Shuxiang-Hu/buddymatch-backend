@@ -1,8 +1,8 @@
 package com.shuxiang.buddymatch.service;
 
-import com.shuxiang.buddymatch.model.domain.Tag;
 import com.shuxiang.buddymatch.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.shuxiang.buddymatch.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -56,7 +56,7 @@ public interface UserService extends IService<User> {
      * @param tags tags the users must have
      * @return
      */
-    List<User> searchUserByTags(List<String> tags);
+    public List<User> searchUserByTags(List<String> tags);
 
 
     public boolean isAdmin(HttpServletRequest request);
@@ -66,4 +66,8 @@ public interface UserService extends IService<User> {
     public User getLoginUser(HttpServletRequest request);
 
     List<User> getRecommendList();
+
+    public boolean isAdmin(User loginUser);
+
+    public List<User> matchUsers(long num, User loginUser);
 }

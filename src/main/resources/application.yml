@@ -2,14 +2,14 @@ spring:
   profiles:
     active: dev
   application:
-    name: user-center-backend
+    name: buddy-match-backend
   # DataSource Config
   datasource:
-    # driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:p6spy:mysql://localhost:3306/bm_db?serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.1.55:3306/bm_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
     username: root
     password: 123321
-    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    # driver-class-name: com.p6spy.engine.spy.P6SpyDriver
   # session 失效时间
   session:
     timeout: 86400
@@ -20,7 +20,7 @@ spring:
       matching-strategy: ant_path_matcher
   redis:
     port: 6379
-    host: localhost
+    host: 192.168.1.55
     database: 0
 server:
   port: 8080
@@ -32,7 +32,7 @@ server:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    # log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
   global-config:
     db-config:
@@ -57,11 +57,11 @@ knife4j:
   setting:
     language: zh_cn
 
-logging:
-  level:
-    com:
-      baomidou:
-        mybatisplus: DEBUG
-      shuxiang:
-        buddymatch:
-          mapper: DEBUg
+#logging:
+#  level:
+#    com:
+#      baomidou:
+#        mybatisplus: DEBUG
+#      shuxiang:
+#        buddymatch:
+#          mapper: DEBUG

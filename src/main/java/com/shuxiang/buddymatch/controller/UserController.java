@@ -5,13 +5,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.shuxiang.buddymatch.common.BaseResponse;
 import com.shuxiang.buddymatch.common.ErrorCode;
 import com.shuxiang.buddymatch.common.ResultUtils;
+import com.shuxiang.buddymatch.contant.RedisKeyPrefix;
 import com.shuxiang.buddymatch.contant.UserConstant;
 import com.shuxiang.buddymatch.exception.BusinessException;
 import com.shuxiang.buddymatch.model.domain.User;
-import com.shuxiang.buddymatch.model.domain.request.UserLoginRequest;
-import com.shuxiang.buddymatch.model.domain.request.UserRegisterRequest;
+import com.shuxiang.buddymatch.model.request.UserLoginRequest;
+import com.shuxiang.buddymatch.model.request.UserRegisterRequest;
+import com.shuxiang.buddymatch.model.vo.UserVO;
 import com.shuxiang.buddymatch.service.UserService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +33,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -106,7 +113,7 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         List<User> users = userService.searchUserByTags(tagNameList);
-        System.out.println("search by tag result: " + users);
+        //System.out.println("search by tag result: " + users);
 
         return ResultUtils.success(users);
     }
@@ -138,11 +145,33 @@ public class UserController {
     }
     @GetMapping("/recommend")
     public BaseResponse<Page<User>> recommendUsers(HttpServletRequest request) {
-        QueryWrapper<User> qw = new QueryWrapper<>();
-        Page<User> users = userService.page(new Page<>(1,20),qw);
+        User loginUser = userService.getLoginUser(request);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        String key = RedisKeyPrefix.RECOMMEND + loginUser.getId();
+        Page<User> users = (Page<User>) redisTemplate.opsForValue().get(key);
+        if(users != null){
+            return ResultUtils.success(users);
+        }
 
+
+        QueryWrapper<User> qw = new QueryWrapper<>();
+        users = userService.page(new Page<>(1,20),qw);
+        redisTemplate.opsForValue().set(key,users);
 
         return ResultUtils.success(users);
+    }
+
+    @GetMapping("/match")
+    public BaseResponse<List<User>> recommendUsers(Long num, HttpServletRequest request) {
+        if(num <=0 || num > 20){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+
+
+        return ResultUtils.success(userService.matchUsers(num,loginUser));
     }
 
 

@@ -1,4 +1,4 @@
-package com.shuxiang.buddymatch.model.domain.request;
+package com.shuxiang.buddymatch.model.request;
 
 import lombok.Data;
 

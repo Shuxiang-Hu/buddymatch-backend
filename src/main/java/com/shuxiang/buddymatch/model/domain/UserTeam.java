@@ -1,44 +1,38 @@
 package com.shuxiang.buddymatch.model.domain;
 
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
 
 /**
- * 标签
- * @TableName tag
+ * 用户队伍关系
+ * @TableName user_team
  */
+@TableName(value ="user_team")
 @Data
-public class Tag implements Serializable {
+public class UserTeam implements Serializable {
     /**
      * id
      */
-    @TableId("id")
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 标签名称
-     */
-    private String tagName;
-
-    /**
-     * 用户 id
+     * 用户id
      */
     private Long userId;
 
     /**
-     * 父标签 id
+     * 队伍id
      */
-    private Long parentId;
+    private Long teamId;
 
     /**
-     * 0 - 不是, 1 - 父标签
+     * 加入时间
      */
-    private Integer isParent;
+    private Date joinTime;
 
     /**
      * 创建时间

@@ -2,22 +2,21 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.shuxiang.buddymatch.mapper.TagMapper">
+<mapper namespace="com.shuxiang.buddymatch.mapper.UserTeamMapper">
 
-    <resultMap id="BaseResultMap" type="com.shuxiang.buddymatch.model.domain.Tag">
+    <resultMap id="BaseResultMap" type="com.shuxiang.buddymatch.model.domain.UserTeam">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="tagName" column="tagName" jdbcType="VARCHAR"/>
             <result property="userId" column="userId" jdbcType="BIGINT"/>
-            <result property="parentId" column="parentId" jdbcType="BIGINT"/>
-            <result property="isParent" column="isParent" jdbcType="TINYINT"/>
+            <result property="teamId" column="teamId" jdbcType="BIGINT"/>
+            <result property="joinTime" column="joinTime" jdbcType="TIMESTAMP"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,tagName,userId,
-        parentId,isParent,createTime,
-        updateTime,isDelete
+        id,userId,teamId,
+        joinTime,createTime,updateTime,
+        isDelete
     </sql>
 </mapper>

@@ -8,11 +8,12 @@ import com.shuxiang.buddymatch.common.ErrorCode;
 import com.shuxiang.buddymatch.contant.UserConstant;
 import com.shuxiang.buddymatch.exception.BusinessException;
 import com.shuxiang.buddymatch.mapper.UserMapper;
-import com.shuxiang.buddymatch.model.domain.Tag;
 import com.shuxiang.buddymatch.model.domain.User;
 import com.shuxiang.buddymatch.service.UserService;
+import com.shuxiang.buddymatch.util.AlgorithmUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -183,7 +184,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Set<String> tagSet = new HashSet<>(tagNames);
 
         //System.out.println("Target tags:  " + tagSet);
-        List<User> users = userMapper.selectList(null);
+        QueryWrapper<User> qw = new QueryWrapper<>();
+        qw.last("limit 20");
+        List<User> users = userMapper.selectList(qw);
         List<User> res = new ArrayList<>();
         Gson gson = new Gson();
 
@@ -221,7 +224,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 仅管理员可查询
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         User user = (User) userObj;
-        return user != null && user.getUserRole() == UserConstant.ADMIN_ROLE;
+        return isAdmin(user);
     }
 
     @Override
@@ -262,10 +265,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
     }
 
-    /**
-     *
-     * @return 与当前登录用户匹配度高的用户列表
-     */
+
     @Override
     public List<User> getRecommendList() {
         QueryWrapper<User> qw = new QueryWrapper<>();
@@ -273,6 +273,72 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         users = users.stream().map((this::getSafetyUser)).collect(Collectors.toList());
         return users;
     }
+
+    @Override
+    public boolean isAdmin(User loginUser) {
+        return loginUser != null && loginUser.getUserRole() == UserConstant.ADMIN_ROLE;
+    }
+
+    /**
+     *
+     * @return 与当前登录用户匹配度高的用户列表
+     */
+    @Override
+    public List<User> matchUsers(long num, User loginUser) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id", "tags");
+        queryWrapper.isNotNull("tags");
+        //queryWrapper.last("limit " +  40);
+        List<User> userList = this.list(queryWrapper);
+        String  tags = loginUser.getTags();
+        if(tags == null || tags.equals("")){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户未设置标签");
+        }
+        tags = tags.toLowerCase();
+        //System.out.println("Tags: " + tags);
+        Gson gson = new Gson();
+        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {
+        }.getType());
+        // 用户列表的下标 => 相似度
+        List<Pair<User, Double>> list = new ArrayList<>();
+        // 依次计算所有用户和当前用户的相似度
+        for (User user : userList) {
+            String userTags = user.getTags().toLowerCase();
+            //System.out.println("Current user: " + user);
+            // 无标签或者为当前用户自己
+            if (StringUtils.isBlank(userTags) || Objects.equals(user.getId(), loginUser.getId())) {
+                continue;
+            }
+            List<String> userTagList = gson.fromJson(userTags, new TypeToken<List<String>>() {
+            }.getType());
+            // 计算分数
+            double dice = AlgorithmUtils.dice(tagList, userTagList);
+            //System.out.println(dice);
+            list.add(new Pair<>(user, dice));
+        }
+        // 按dice由大到小排序
+        List<Pair<User, Double>> topUserPairList = list.stream()
+                .sorted(Comparator.comparingDouble((Pair<User, Double> pair) -> pair.getValue()).reversed())
+                .limit(num)
+                .collect(Collectors.toList());
+        // 原本顺序的 userId 列表
+        List<Long> userIdList = topUserPairList.stream().map(pair -> pair.getKey().getId()).collect(Collectors.toList());
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.in("id", userIdList);
+        // 1, 3, 2
+        // User1、User2、User3
+        // 1 => User1, 2 => User2, 3 => User3
+        Map<Long, List<User>> userIdUserListMap = this.list(userQueryWrapper)
+                .stream()
+                .map(this::getSafetyUser)
+                .collect(Collectors.groupingBy(User::getId));
+        List<User> finalUserList = new ArrayList<>();
+        for (Long userId : userIdList) {
+            finalUserList.add(userIdUserListMap.get(userId).get(0));
+        }
+        return finalUserList;
+    }
+
 }
 
 

@@ -27,7 +27,7 @@ public class InsertUsers {
     /**
      * 批量插入用户
      */
-    @Scheduled(initialDelay = 5000, fixedRate = Long.MAX_VALUE)
+    //@Scheduled(initialDelay = 5000, fixedRate = Long.MAX_VALUE)
     public void doInsertUsers() {
 //        QueryWrapper<User> qw = new QueryWrapper<>();
 //        qw.eq("userAccount","fakeUser");
