@@ -8,7 +8,7 @@
         <version>2.6.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.yupi</groupId>
+    <groupId>com.shuxiang</groupId>
     <artifactId>buddy-match-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>buddy-match-backend</name>
